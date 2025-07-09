@@ -73,7 +73,7 @@ if False:
 
 T = 0.00001
 J = 1
-B = .01
+B = 0
 
 
 # for _ in range(30):
