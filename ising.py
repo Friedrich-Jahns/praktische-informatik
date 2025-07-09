@@ -60,7 +60,7 @@ if False:
     grid = spins
 
 if True:
-    N = 50
+    N = 100
     grid = np.random.choice([-1, 1], size=(N, N))
     print()
 
