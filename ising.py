@@ -2,6 +2,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
+# Configurations:
+# 1:Plot Grid(random start)
+# 2:Plot Grid(random start), B>0
+# 3:Plot Grid(random start),Temperature, Magnetiziation  and Energy
+# 4:Plot Grid(random start), B>0,Temperature, Magnetiziation  and Energy
+config = 4
+
+
 #---------------------Fuktionen---------------------#
 
 
@@ -43,6 +51,42 @@ def metropolis_step(mat,T,J,B):
         if dE<0 or np.random.rand() < np.exp(-dE / T):
             mat[i,j] = mat[i,j]*-1
 
+def update(frame):
+    global T
+
+
+    # ham.append(hamiltonian(grid,J,B))
+    metropolis_step(grid, T,J,B)
+    img.set_array(grid)
+
+    if config == 3 or config == 4:
+        T_plot.append(T)
+        tp.set_data(np.arange(len(T_plot)), T_plot)
+        axes[0,1].relim()
+        axes[0,1].autoscale_view()
+
+
+        mag.append(magnetization(grid))
+        p1.set_data(np.arange(len(mag)), mag)
+        axes[1,0].relim()
+        axes[1,0].autoscale_view()
+
+        eng.append(hamiltonian(grid,J=J,B=B))
+        p2.set_data(np.arange(len(eng)), eng)
+        axes[1,1].relim()
+        axes[1,1].autoscale_view()
+
+
+    if frame % 100 == 0:#frame >=39 and
+        T += .2
+
+    # frame_count += 1
+    if config == 3 or config ==4:
+        return [img,tp,p1,p2]
+    if config == 2 or config ==1:
+        return [img]
+ 
+
 
 #---------------------Start config---------------------#
 
@@ -59,7 +103,7 @@ if False:
                 spins[i, j] = -1
     grid = spins
 
-if True:
+if config == 1 or config == 2 or config == 3 or config == 4:
     N = 100
     grid = np.random.choice([-1, 1], size=(N, N))
     print()
@@ -70,81 +114,55 @@ if False:
 
 #---------------------Start params---------------------#
 
+if config == 1 or config == 3:
+    T = 0.00001
+    J = 1
+    B = 0
 
-T = 0.00001
-J = 1
-B = 0
+if config ==2 or config == 4:
+    T = 0.00001
+    J = 1
+    B = 0.01
 
+#---------------------Plot---------------------#
 
-# for _ in range(30):
-#     metropolis_step(grid, T, J, B)
-
-#---------------------Start params---------------------#
 
 mag = []
 eng = []
 T_plot = []
 
-fig, axes = plt.subplots(2,2,figsize=(6, 6))
-img = axes[0,0].imshow(grid, cmap="Reds", interpolation="nearest", animated=True)
 
-tp, = axes[0,1].plot([], [], 'r-', label="Temperatur")
-p1, = axes[1,0].plot([], [], 'r-', label="Magnetisierung")
-p2, = axes[1,1].plot([], [], 'r-', label="Energie")
+if config == 1 or config ==2:
+    fig, axes = plt.subplots(1,1,figsize=(6, 6))
+    img = axes.imshow(grid, cmap="Reds", interpolation="nearest", animated=True)
 
+    ani = FuncAnimation(fig, update, frames=10000, interval=200, blit=True,repeat=False)
 
-def update(frame):
-    global T
+    axes.axis('off')
 
-
-    # ham.append(hamiltonian(grid,J,B))
-    metropolis_step(grid, T,J,B)
-    img.set_array(grid)
-
-    T_plot.append(T)
-    tp.set_data(np.arange(len(T_plot)), T_plot)
-    axes[0,1].relim()
-    axes[0,1].autoscale_view()
+    plt.tight_layout()
+    plt.show()
 
 
-    mag.append(magnetization(grid))
-    p1.set_data(np.arange(len(mag)), mag)
-    axes[1,0].relim()
-    axes[1,0].autoscale_view()
+if config == 3 or config == 4:
+    fig, axes = plt.subplots(2,2,figsize=(6, 6))
+    img = axes[0,0].imshow(grid, cmap="Reds", interpolation="nearest", animated=True)
 
-    eng.append(hamiltonian(grid,J=J,B=B))
-    p2.set_data(np.arange(len(eng)), eng)
-    axes[1,1].relim()
-    axes[1,1].autoscale_view()
+    tp, = axes[0,1].plot([], [], 'r-', label="Temperatur")
+    p1, = axes[1,0].plot([], [], 'r-', label="Magnetisierung")
+    p2, = axes[1,1].plot([], [], 'r-', label="Energie")
 
 
-    if frame % 100 == 0:#frame >=39 and
-        T += .2
+    ani = FuncAnimation(fig, update, frames=10000, interval=200, blit=True,repeat=False)
 
-    # frame_count += 1
-    return [img,tp,p1,p2]
+    axes[0,0].axis('off')
 
-ani = FuncAnimation(fig, update, frames=10000, interval=200, blit=True,repeat=False)
-# ani.save('ising_model_simulation.gif', writer='imagemagick', fps=10)
+    axes[1,0].set_title('Magnetisierung')
+    axes[1,0].set_aspect('auto')
 
-axes[0,0].axis('off')
-
-# axes[0,1].axis('off')
+    axes[1,1].set_title('Energie')
+    axes[1,1].set_aspect('auto')
 
 
-
-axes[1,0].set_title('Magnetisierung')
-axes[1,0].set_aspect('auto')
-
-axes[1,1].set_title('Energie')
-axes[1,1].set_aspect('auto')
-
-
-
-plt.tight_layout()
-plt.show()
-# plt.subplot(1,2,1)
-# plt.plot(ham)
-# plt.subplot(1,2,2)
-# plt.plot(mag)
-# plt.show()
+    plt.tight_layout()
+    plt.show()
