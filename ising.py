@@ -12,7 +12,7 @@ config = 4
 
 #---------------------Fuktionen---------------------#
 
-
+#Define nearest neighbors around a given pixel
 def neighbors(i, j, mat):
     N = mat.shape[0]
     return np.array([
@@ -22,10 +22,11 @@ def neighbors(i, j, mat):
         mat[i, (j-1)%N]
     ])
 
-
+#Energydifference intreduced by a spinflip and the configuration of its neigbours
 def denergy(spin,neighbors,J,B=0):
     return 2*spin*(J*sum(neighbors)+B)
 
+#Total Energy of the configuration
 def hamiltonian(mat, J=1.5,B=0):
     N = mat.shape[0]
     E = 0
@@ -39,9 +40,13 @@ def hamiltonian(mat, J=1.5,B=0):
             E -= B * s
     return E
 
+
+#Magnetization of the total configurationa sthe sum of all spins
 def magnetization(mat):
     return np.sum(mat)/mat.shape[0]**2
 
+
+#Step in the simulation which in each step can introduce a spinflip based on thermal condition or energydifference
 def metropolis_step(mat,T,J,B):
     N = mat.shape[0]
     for n in range(N**2):
@@ -51,6 +56,7 @@ def metropolis_step(mat,T,J,B):
         if dE<0 or np.random.rand() < np.exp(-dE / T):
             mat[i,j] = mat[i,j]*-1
 
+#Update funktion for each frame which upgrades the grid for one step
 def update(frame):
     global T
 
@@ -76,9 +82,12 @@ def update(frame):
         axes[1,1].relim()
         axes[1,1].autoscale_view()
 
-
-    if frame % 100 == 0:#frame >=39 and
-        T += .2
+        if config == 3:
+            if frame % 100 == 0:#frame >=39 and
+                T += .2
+        elif config == 4:
+            if frame % 20 == 0:#frame >=39 and
+                T += .2
 
     # frame_count += 1
     if config == 3 or config ==4:
@@ -103,6 +112,7 @@ if False:
                 spins[i, j] = -1
     grid = spins
 
+#Random Configuration of pos and neg spins
 if config == 1 or config == 2 or config == 3 or config == 4:
     N = 100
     grid = np.random.choice([-1, 1], size=(N, N))
@@ -113,7 +123,7 @@ if False:
     grid = np.ones((N, N))
 
 #---------------------Start params---------------------#
-
+#Start params for the grids params
 if config == 1 or config == 3:
     T = 0.00001
     J = 1
@@ -125,7 +135,7 @@ if config ==2 or config == 4:
     B = 0.01
 
 #---------------------Plot---------------------#
-
+#Plotconfiguration for either plotting only the grid or the grid withl live graph updates for temperature magnetization and Energy
 
 mag = []
 eng = []
